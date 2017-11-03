@@ -4,37 +4,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.travix.medusa.busyflight.converter.FlightConverter;
 import com.travix.medusa.busyflights.domain.crazyair.CrazyAirRequest;
 import com.travix.medusa.busyflights.domain.crazyair.CrazyAirResponse;
 import com.travix.medusa.busyflights.domain.crazyair.CrazyAirService;
 import com.travix.medusa.busyflights.domain.toughjet.ToughJetRequest;
 import com.travix.medusa.busyflights.domain.toughjet.ToughJetResponse;
 import com.travix.medusa.busyflights.domain.toughjet.ToughJetService;
-import com.travix.medusa.busyflights.service.BusyFlights;
 
 @RestController
-public class BusyFlightRestController implements BusyFlights {
+public class BusyFlightRestController {
 
 	
 	
 	@Autowired CrazyAirService crazyAirService;
 	@Autowired ToughJetService toughJetService;
-	@Autowired Converter converter;
+
+	@Qualifier("CrazyAirConverter")
+	@Autowired FlightConverter<List<CrazyAirResponse>,List<BusyFlightsResponse>> crazyAirFlightConverter;
+
+	@Qualifier("ToughJetFlightConverter")
+	@Autowired FlightConverter<List<ToughJetResponse>,List<BusyFlightsResponse>> tughJetFlightConverter;
 
 	
-	@RequestMapping("/getFlight/{start}/{end}/{iataOrigin}/{iataDestination}")
-	public List<BusyFlightsResponse> getFlight(@PathVariable String start, @PathVariable String end, 
-											@PathVariable Integer pax,@PathVariable String from, 
-											@PathVariable String to) {
-		
-		//TO-DO 
-		return null;
-	}
 	
 	
 	@RequestMapping("/getFlights")
@@ -48,10 +45,10 @@ public class BusyFlightRestController implements BusyFlights {
 		ToughJetRequest  toughJetRequest = composeToughJetRequest(busyRequest);
 		List<ToughJetResponse> toughJetResponse = sendToughJetRequest(toughJetRequest);
 
-		ret.addAll(converter.convertCrazyFlights(crazyAirResponse));
-		ret.addAll(converter.convertToughFlights(toughJetResponse));
+		ret.addAll(crazyAirFlightConverter.convert(crazyAirResponse));
+		ret.addAll(tughJetFlightConverter.convert(toughJetResponse));
 		
-	
+//	
 		return ret;
 	}
 
